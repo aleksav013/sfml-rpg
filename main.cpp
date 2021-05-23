@@ -1,8 +1,13 @@
+#include <cstddef>
 #include<iostream>
 #include<SFML/Graphics.hpp>
 #include<random>
-std::mt19937 rng(time(0));
-const int n=20;
+class Global
+{
+    public:
+	static std::mt19937 rng;
+};
+std::mt19937 Global::rng = std::mt19937(time(0));
 class Entity
 {
     public:
@@ -24,19 +29,20 @@ class Enemy:public Entity
     public:
 	bool ziv=1;
 	Enemy():Entity() {}
-	Enemy(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja) {}
-	void kaigracu(float igracx,float igracy);
+	Enemy(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
+	void kaigracu(float igracx,float igracy,float dt);
 };
-void Enemy::kaigracu(float igracx,float igracy)
+Enemy::Enemy(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja) {}
+void Enemy::kaigracu(float igracx,float igracy,float dt)
 {
-	float k=(igracy-y)/(igracx-x);
-	float r=1.0;
-	float dx=r/std::sqrt(1+k*k);
-	if(igracx-x<0) dx=-dx;	
-	float dy=k*dx;
+    float k=(igracy-y)/(igracx-x);
+    float r=100*dt;
+    float dx=r/std::sqrt(1+k*k);
+    if(igracx-x<0) dx=-dx;
+    float dy=k*dx;
 	
-	x+=dx;
-	y+=dy;
+    x+=dx;
+    y+=dy;
 
 }
 class Player:public Entity
@@ -47,31 +53,22 @@ class Player:public Entity
 	float stomptime;
 	
 	Player():Entity() {}
-	Player(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja) 
-	{
-	    health=100;
-	    xp=0;
-	    stomptime=0;
-	}
-	void stomp(Enemy neprijatelj[]);
+	Player(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
 };
-void Player::stomp(Enemy neprijatelj[])
+Player::Player(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja)
 {
-    stomptime=3;
-    for(int i=0;i<n;i++) if(neprijatelj[i].ziv)
-    {
-	if((x-neprijatelj[i].x)*(x-neprijatelj[i].x)+(y-neprijatelj[i].y)*(y-neprijatelj[i].y)<stomprad*stomprad)
-	{
-	    xp+=5;
-	    neprijatelj[i].ziv=0;
-	}
-    }
+    health=100;
+    xp=0;
+    stomptime=0;
 }
 class Game
 {
+    float dt;
+    sf::Clock sat;
+
     float time;
     Player igrac;
-    Enemy neprijatelj[n];
+    std::vector<Enemy> neprijatelj;
     sf::RenderWindow prozor;
     int visina,sirina;
     sf::CircleShape krug;
@@ -92,7 +89,7 @@ Game::Game()
     sirina=prozor.getSize().x;
     prozor.setFramerateLimit(60);
     igrac = Player(sf::Vector2f((float)sirina/2,(float)visina/2),sf::Vector2f(100.0f,100.0f),sf::Color::White);
-    for(int i=0;i<n;i++) neprijatelj[i] = Enemy(sf::Vector2f(rng()%sirina,rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Red);
+    for(int i=0;i<20;i++) neprijatelj.push_back(Enemy(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Red));
     igrac.x=(float)prozor.getSize().x/2;
     igrac.y=(float)prozor.getSize().y/2;
 
@@ -104,12 +101,20 @@ Game::Game()
 }
 void Game::stompmain()
 {
-    igrac.stomp(neprijatelj);
+    igrac.stomptime=5;
     krug.setPosition(igrac.x,igrac.y);
+    for(int i=0;i<neprijatelj.size();i++) if(neprijatelj[i].ziv)
+    {
+	if(neprijatelj[i].telo.getGlobalBounds().intersects(krug.getGlobalBounds()))
+	{
+	    igrac.xp+=5;
+	    neprijatelj[i].ziv=0;
+	}
+    }
 }
 void Game::keyboard()
 {
-    float dist=10.0;
+    float dist=500.0*dt;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::W)&&igrac.y>0) igrac.y-=dist;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)&&igrac.x>0) igrac.x-=dist;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)&&igrac.y<visina) igrac.y+=dist;
@@ -138,13 +143,15 @@ void Game::events()
 void Game::draw()
 {
     prozor.clear();
-    if(igrac.stomptime>2.8) prozor.draw(krug);
+    if(igrac.stomptime>4.6) prozor.draw(krug);
     prozor.draw(igrac.telo);
-    for(int i=0;i<n;i++) if(neprijatelj[i].ziv) prozor.draw(neprijatelj[i].telo);
+    for(int i=0;i<neprijatelj.size();i++) if(neprijatelj[i].ziv) prozor.draw(neprijatelj[i].telo);
     prozor.display();
 }
 void Game::run()
 {
+    dt=sat.restart().asMicroseconds()/1000000.0;
+    std::cout<<"fps: "<<1.0/dt<<std::endl;
     if(igrac.health<=0)
     {
 	prozor.close();
@@ -152,27 +159,27 @@ void Game::run()
 	return;
     }
 
-    time-=0.01;
+    time-=dt;
     if(time<0)
     {
-	time=5;
-	for(int i=0;i<n;i++) if(!neprijatelj[i].ziv)
+	time=8;
+	for(int i=0;i<neprijatelj.size();i++) if(!neprijatelj[i].ziv)
 	{
 	    neprijatelj[i].ziv=1;
-	    neprijatelj[i].x=rng()%sirina;
-	    neprijatelj[i].y=rng()%visina;
+	    neprijatelj[i].x=Global::rng()%sirina;
+	    neprijatelj[i].y=Global::rng()%visina;
 	}
     }
-    if(igrac.stomptime>0) igrac.stomptime-=0.01;
+    if(igrac.stomptime>0) igrac.stomptime-=dt;
     igrac.telo.setPosition(igrac.x,igrac.y);
-    for(int i=0;i<n;i++) if(neprijatelj[i].ziv)
+    for(int i=0;i<neprijatelj.size();i++) if(neprijatelj[i].ziv)
     {
-	neprijatelj[i].kaigracu(igrac.x,igrac.y);
+	neprijatelj[i].kaigracu(igrac.x,igrac.y,dt);
 	neprijatelj[i].telo.setPosition(neprijatelj[i].x,neprijatelj[i].y);
 	if(neprijatelj[i].telo.getGlobalBounds().intersects(igrac.telo.getGlobalBounds()))
 	{
 	    neprijatelj[i].ziv=0;
-	    igrac.health--;
+	    igrac.health-=Global::rng()%4+1;
 	}
     }
     std::cout<<"Health: "<<igrac.health<<", skor: "<<igrac.xp<<std::endl;
