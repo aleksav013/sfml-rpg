@@ -1,4 +1,3 @@
-#include <cstddef>
 #include<iostream>
 #include<SFML/Graphics.hpp>
 #include<random>
@@ -40,10 +39,8 @@ void Enemy::kaigracu(float igracx,float igracy,float dt)
     float dx=r/std::sqrt(1+k*k);
     if(igracx-x<0) dx=-dx;
     float dy=k*dx;
-	
     x+=dx;
     y+=dy;
-
 }
 class Player:public Entity
 {
@@ -51,40 +48,40 @@ class Player:public Entity
 	int health,xp;
 	int stomprad=300;
 	float stomptime;
-	
+
 	Player():Entity() {}
 	Player(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
 };
 Player::Player(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja)
 {
     health=100;
-    xp=0;
     stomptime=0;
+    xp=0;
 }
 class Game
 {
-    float dt;
-    sf::Clock sat;
-
-    float time;
-    Player igrac;
-    std::vector<Enemy> neprijatelj;
-    sf::RenderWindow prozor;
-    int visina,sirina;
-    sf::CircleShape krug;
-    public:
-	Game();
-	void loop();
+    private:
+	float dt;
+	sf::Clock sat;
+	float time;
+	Player igrac;
+	std::vector<Enemy> neprijatelj;
+	int visina,sirina;
+	sf::RenderWindow prozor;
+	sf::CircleShape krug;
 	void events();
 	void keyboard();
 	void run();
 	void draw();
 	void stompmain();
+    public:
+	Game();
+	void loop();
 };
 Game::Game()
 {
     time=5;
-    prozor.create(sf::VideoMode(512,512),"RPG igra");
+    prozor.create(sf::VideoMode(1024,1024),"RPG igra");
     visina=prozor.getSize().y;
     sirina=prozor.getSize().x;
     prozor.setFramerateLimit(60);
@@ -136,6 +133,8 @@ void Game::events()
 		sirina=prozor.getSize().x;
 		std::cout<<"Nova velicina prozora je:"<<sirina<<'x'<<visina<<std::endl;
 		break;
+	    default:
+		break;
 	}
     }
     keyboard();
@@ -184,7 +183,6 @@ void Game::run()
     }
     std::cout<<"Health: "<<igrac.health<<", skor: "<<igrac.xp<<std::endl;
     std::cout<<"Do sledeceg stompa: "<<igrac.stomptime<<std::endl;
-
 }
 void Game::loop()
 {
