@@ -106,6 +106,7 @@ Player::Player(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entit
 class Game
 {
     private:
+	sf::Font font;
 	float dt;
 	sf::Clock sat;
 	float time,time2,time3;
@@ -120,6 +121,8 @@ class Game
 	
 	sf::CircleShape krug;
 	sf::RectangleShape health,healthblank,stomp,stompblank;
+
+	sf::Text healthtext,stomptext;
 
 	void events();
 	void keyboard();
@@ -143,8 +146,8 @@ Game::Game()
     prozor.setFramerateLimit(60);
     igrac = Player(sf::Vector2f((float)sirina/2,(float)visina/2),sf::Vector2f(100.0f,100.0f),sf::Color::White);
     for(int i=0;i<20;i++) nep.push_back(Enemy(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Red));
-    for(int i=0;i<10;i++) nep2.push_back(Enemy2(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Blue));
-    for(int i=0;i<5;i++) nep3.push_back(Enemy3(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Yellow));
+    for(int i=0;i<7;i++) nep2.push_back(Enemy2(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Blue));
+    for(int i=0;i<4;i++) nep3.push_back(Enemy3(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Yellow));
     igrac.x=(float)prozor.getSize().x/2;
     igrac.y=(float)prozor.getSize().y/2;
 
@@ -165,6 +168,21 @@ Game::Game()
     stompblank.setSize(sf::Vector2f(sirina/3.0,50.0));
     stompblank.setFillColor(sf::Color::White);
     stompblank.setPosition(sirina*2.0/3,0);
+
+    if(!font.loadFromFile("LiberationMono-Regular.ttf"))
+    {
+	std::cout<<"Font not found\n";
+    }
+    healthtext.setFont(font);
+    healthtext.setString("Health");
+    healthtext.setCharacterSize(24);
+    healthtext.setFillColor(sf::Color::Black);
+    stomptext.setFont(font);
+    stomptext.setString("Stomp");
+    stomptext.setCharacterSize(24);
+    stomptext.setPosition(2/3.0*sirina,0);
+    stomptext.setFillColor(sf::Color::Black);
+
 }
 void Game::updatedt()
 {
@@ -245,8 +263,10 @@ void Game::draw()
 //UserInterface
     prozor.draw(healthblank);
     prozor.draw(health);
+    prozor.draw(healthtext);
     prozor.draw(stompblank);
     prozor.draw(stomp);
+    prozor.draw(stomptext);
 
     prozor.display();
 }
@@ -256,7 +276,6 @@ void Game::run()
     updateui();
     updatedt();
     if(igrac.stomptime>0) igrac.stomptime-=dt;
-    std::cout<<"fps: "<<1.0/dt<<std::endl;
 
     //game over
     if(igrac.health<=0)
@@ -341,8 +360,9 @@ void Game::run()
 	}
     }
     //debug info
-    std::cout<<"Health: "<<igrac.health<<", skor: "<<igrac.xp<<std::endl;
-    std::cout<<"Do sledeceg stompa: "<<igrac.stomptime<<std::endl;
+    //std::cout<<"Health: "<<igrac.health<<", skor: "<<igrac.xp<<std::endl;
+    //std::cout<<"Do sledeceg stompa: "<<igrac.stomptime<<std::endl;
+    //std::cout<<"fps: "<<1.0/dt<<std::endl;
 }
 void Game::loop()
 {
