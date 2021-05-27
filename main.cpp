@@ -11,9 +11,12 @@ std::mt19937 Global::rng = std::mt19937(time(0));
 class Entity
 {
     public:
+	int ziv=1;
 	float x,y;
 	sf::RectangleShape telo;
-	Entity() {} Entity(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja); };
+	Entity() {} Entity(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
+	void respawn(int sirina,int visina);
+};
 Entity::Entity(sf::Vector2f pozicija, sf::Vector2f velicina,sf::Color boja)
 {
     telo.setSize(velicina);
@@ -22,47 +25,59 @@ Entity::Entity(sf::Vector2f pozicija, sf::Vector2f velicina,sf::Color boja)
     x=pozicija.x;
     y=pozicija.y; 
 }
+void Entity::respawn(int sirina,int visina)
+{
+    if(!ziv)
+    {
+	x=Global::rng()%sirina;
+	y=Global::rng()%visina;
+	ziv=1;
+    }
+}
 class Powerup:public Entity 
 {
     public:
-	bool ziv=1;
+	static float time;
 	Powerup():Entity() {}
 	Powerup(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
 };
+float Powerup::time=20;
 Powerup::Powerup(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja)
 {
 
 }
-class Enemy:public Entity
+class Enemy1:public Entity
 {
     public:
-	bool ziv=1;
-	Enemy():Entity() {}
-	Enemy(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
+	static float time;
+	Enemy1():Entity() {}
+	Enemy1(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
 	void kaigracu(float igracx,float igracy,float dt);
 };
-Enemy::Enemy(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja) {}
-void Enemy::kaigracu(float igracx,float igracy,float dt)
+float Enemy1::time=8;
+Enemy1::Enemy1(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja) {}
+void Enemy1::kaigracu(float igracx,float igracy,float dt)
 {
     float k=(igracy-y)/(igracx-x);
-    float r=100.0*dt;
+    float r=150.0;
     float dx=r/std::sqrt(1+k*k);
     if(igracx-x<0) dx=-dx;
     float dy=k*dx;
-    x+=dx;
-    y+=dy;
+    x+=dx*dt;
+    y+=dy*dt;
 }
 class Enemy2:public Entity
 {
     private:
 	float vx,vy;
     public:
-	bool ziv=1;
+	static float time;
 	Enemy2():Entity() {}
 	Enemy2(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
 	void brzina(float igracx,float igracy,float dt);
-	void izracunajpoz();
+	void izracunajpoz(float igracx,float igracy,float dt);
 };
+float Enemy2::time=14;
 Enemy2::Enemy2(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja)
 {
     vx=vy=0;
@@ -70,35 +85,44 @@ Enemy2::Enemy2(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entit
 void Enemy2::brzina(float igracx,float igracy,float dt)
 {
     float k=(igracy-y)/(igracx-x);
-    float r=10.0*dt;
+    float r=200.0*dt;
     float dx=r/std::sqrt(1+k*k);
     if(igracx-x<0) dx=-dx;
     float dy=k*dx;
     vx+=dx;
     vy+=dy;
 }
-void Enemy2::izracunajpoz()
+void Enemy2::izracunajpoz(float igracx,float igracy,float dt)
 {
-    x+=vx;
-    y+=vy;
+    if((x+vx-igracx)*(x+vx-igracx)+(y+vy-igracy)*(y+vy-igracy)<(x-igracx)*(x-igracx)+(y-igracy)*(y-igracy))
+    {
+	x+=vx*dt*3;
+	y+=vy*dt*3;
+    }
+    else
+    {
+	x+=vx*dt;
+	y+=vy*dt;
+    }
 }
 class Enemy3:public Entity
 {
     public:
+	static float time;
 	float vx,vy;
-	bool ziv=1;
 	Enemy3():Entity() {}
 	Enemy3(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
-	void izracunajpoz();
+	void izracunajpoz(float dt);
 };
+float Enemy3::time=10;
 Enemy3::Enemy3(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja)
 {
-    vx=vy=10.0;
+    vx=vy=500.0;
 }
-void Enemy3::izracunajpoz()
+void Enemy3::izracunajpoz(float dt)
 {
-    x+=vx;
-    y+=vy;
+    x+=vx*dt;
+    y+=vy*dt;
 }
 class Player:public Entity
 {
@@ -126,13 +150,12 @@ class Game
 {
     private:
 	sf::Font font;
-	sf::Texture tekstura,neprijatelj;
+	sf::Texture healthtex,neprijatelj;
 	float dt;
-	sf::Clock sat;
-	float time,time2,time3,time4;
+	sf::Clock sat,time;
 
 	Player igrac;
-	std::vector<Enemy> nep;
+	std::vector<Enemy1> nep;
 	std::vector<Enemy2> nep2;
 	std::vector<Enemy3> nep3;
 	std::vector<Powerup> pow;
@@ -143,7 +166,7 @@ class Game
 	sf::CircleShape krug;
 	sf::RectangleShape health,healthblank,stomp,stompblank;
 
-	sf::Text healthtext,stomptext,fps;
+	sf::Text healthtext,stomptext,fps,score;
 
 	void events();
 	void keyboard();
@@ -158,16 +181,12 @@ class Game
 };
 Game::Game()
 {
-    time=8;
-    time2=14;
-    time3=10;
-    time4=20;
     prozor.create(sf::VideoMode::getFullscreenModes()[0],"RPG igra");
     visina=prozor.getSize().y;
     sirina=prozor.getSize().x;
     prozor.setFramerateLimit(60);
     igrac = Player(sf::Vector2f((float)sirina/2,(float)visina/2),sf::Vector2f(100.0f,100.0f),sf::Color::White);
-    for(int i=0;i<20;i++) nep.push_back(Enemy(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Red));
+    for(int i=0;i<20;i++) nep.push_back(Enemy1(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Red));
     for(int i=0;i<7;i++) nep2.push_back(Enemy2(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Cyan));//(253,106,2)));
     for(int i=0;i<4;i++) nep3.push_back(Enemy3(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Yellow));
     pow.push_back(Powerup(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::White));
@@ -192,7 +211,7 @@ Game::Game()
     stompblank.setFillColor(sf::Color::White);
     stompblank.setPosition(0,50);
 
-    if(!font.loadFromFile("LiberationMono-Regular.ttf"))
+    if(!font.loadFromFile("assets/fonts/LiberationMono-Regular.ttf"))
     {
 	std::cout<<"Font not found\n";
     }
@@ -205,20 +224,26 @@ Game::Game()
     stomptext.setCharacterSize(24);
     stomptext.setPosition(0,50);
     stomptext.setFillColor(sf::Color::Black);
+
     fps.setFont(font);
     fps.setCharacterSize(24);
     fps.setFillColor(sf::Color::White);
     fps.setPosition(sirina*5.0/6,0);
+    score.setFont(font);
+    score.setCharacterSize(24);
+    score.setFillColor(sf::Color::White);
+    score.setPosition(sirina*5.0/6,50);
 
-    if(!tekstura.loadFromFile("healing.png"))
+
+    if(!healthtex.loadFromFile("assets/images/healing.png"))
     {
 	std::cout<<"Texture not found\n";
     }
-    if(!neprijatelj.loadFromFile("nep.png"))
+    if(!neprijatelj.loadFromFile("assets/images/nep.png"))
     {
 	std::cout<<"Texture not found\n";
     }
-    for(int i=0;i<pow.size();i++) pow[i].telo.setTexture(&tekstura);
+    for(int i=0;i<pow.size();i++) pow[i].telo.setTexture(&healthtex);
     for(int i=0;i<nep.size();i++) nep[i].telo.setTexture(&neprijatelj);
     for(int i=0;i<nep2.size();i++) nep2[i].telo.setTexture(&neprijatelj);
     for(int i=0;i<nep3.size();i++) nep3[i].telo.setTexture(&neprijatelj);
@@ -227,6 +252,7 @@ void Game::updatedt()
 {
     dt=sat.restart().asMicroseconds()/1000000.0;
     fps.setString("fps: "+std::to_string(1/dt));
+    score.setString("score: "+std::to_string(time.getElapsedTime().asMilliseconds()/10));
 }
 void Game::updateui()
 {
@@ -265,10 +291,10 @@ void Game::stompmain()
 void Game::keyboard()
 {
     float dist=500.0*dt;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W)&&igrac.y>0) igrac.y-=dist;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)&&igrac.x>0) igrac.x-=dist;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)&&igrac.y<visina) igrac.y+=dist;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)&&igrac.x<sirina) igrac.x+=dist;
+    if((sf::Keyboard::isKeyPressed(sf::Keyboard::W)||sf::Keyboard::isKeyPressed(sf::Keyboard::Up))&&igrac.y>0) igrac.y-=dist;
+    if((sf::Keyboard::isKeyPressed(sf::Keyboard::A)||sf::Keyboard::isKeyPressed(sf::Keyboard::Left))&&igrac.x>0) igrac.x-=dist;
+    if((sf::Keyboard::isKeyPressed(sf::Keyboard::S)||sf::Keyboard::isKeyPressed(sf::Keyboard::Down))&&igrac.y<visina) igrac.y+=dist;
+    if((sf::Keyboard::isKeyPressed(sf::Keyboard::D)||sf::Keyboard::isKeyPressed(sf::Keyboard::Right))&&igrac.x<sirina) igrac.x+=dist;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) if(igrac.stomptime<=0) stompmain();
 }
 void Game::events()
@@ -310,6 +336,7 @@ void Game::draw()
     prozor.draw(stomp);
     prozor.draw(stomptext);
     prozor.draw(fps);
+    prozor.draw(score);
     prozor.display();
 }
 void Game::run()
@@ -328,60 +355,40 @@ void Game::run()
     }
 
     //izracunajpoz
-    for(int i=0;i<nep2.size();i++) nep2[i].izracunajpoz();
+    for(int i=0;i<nep2.size();i++) nep2[i].izracunajpoz(igrac.x,igrac.y,dt);
 
     //izracunaj poz i brzinu
     for(int i=0;i<nep3.size();i++)
     {
 	if(nep3[i].x<0||nep3[i].x>sirina) nep3[i].vx=-nep3[i].vx;
 	if(nep3[i].y<0||nep3[i].y>visina) nep3[i].vy=-nep3[i].vy;
-	nep3[i].izracunajpoz();
+	nep3[i].izracunajpoz(dt);
     }
 
     //respawn
-    time-=dt;
-    time2-=dt;
-    time3-=dt;
-    time4-=dt;
-    if(time<0)
+    Enemy1::time-=dt;
+    Enemy2::time-=dt;
+    Enemy3::time-=dt;
+    Powerup::time-=dt;
+    if(Enemy1::time<0)
     {
-	time=8;
-	for(int i=0;i<nep.size();i++) if(!nep[i].ziv)
-	{
-	    nep[i].ziv=1;
-	    nep[i].x=Global::rng()%sirina;
-	    nep[i].y=Global::rng()%visina;
-	}
+	Enemy1::time=8;
+	for(int i=0;i<nep.size();i++) nep[i].respawn(sirina,visina);
     }
-    if(time2<0)
+    if(Enemy2::time<0)
     {
-	time2=14;
-	for(int i=0;i<nep2.size();i++) if(!nep2[i].ziv)
-	{
-	    nep2[i].ziv=1;
-	    nep2[i].x=Global::rng()%sirina;
-	    nep2[i].y=Global::rng()%visina;
-	}
+	Enemy2::time=14;
+	for(int i=0;i<nep2.size();i++) nep2[i].respawn(sirina,visina);
     }
-    if(time3<0)
+    if(Enemy3::time<0)
     {
-	time3=10;
-	for(int i=0;i<nep3.size();i++) if(!nep3[i].ziv)
-	{
-	    nep3[i].ziv=1;
-	    nep3[i].x=Global::rng()%sirina;
-	    nep3[i].y=Global::rng()%visina;
-	}
+	Enemy3::time=10;
+	for(int i=0;i<nep3.size();i++) nep3[i].respawn(sirina,visina);
     }
-    if(time4<0)
+    if(Powerup::time<0)
     {
-	time4=20;
-	for(int i=0;i<pow.size();i++) if(!pow[i].ziv)
-	{
-	    pow[i].ziv=1;
-	    pow[i].x=Global::rng()%sirina;
-	    pow[i].y=Global::rng()%visina;
-	}
+	Powerup::time=20;
+	for(int i=0;i<pow.size();i++) pow[i].respawn(sirina,visina);
     }
     igrac.telo.setPosition(igrac.x,igrac.y);
 
