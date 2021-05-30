@@ -231,21 +231,21 @@ void Game::initui()
     {
 	std::cerr<<"Font not found\n";
     }
-    //healthtext.setFont(font);
+    healthtext.setFont(font);
     healthtext.setString("Health");
     healthtext.setCharacterSize(24);
     healthtext.setFillColor(sf::Color::Black);
-    //stomptext.setFont(font);
+    stomptext.setFont(font);
     stomptext.setString("Stomp");
     stomptext.setCharacterSize(24);
     stomptext.setPosition(0,50);
     stomptext.setFillColor(sf::Color::Black);
 
-    //fps.setFont(font);
+    fps.setFont(font);
     fps.setCharacterSize(24);
     fps.setFillColor(sf::Color::White);
     fps.setPosition(sirina*5.0/6,0);
-    //score.setFont(font);
+    score.setFont(font);
     score.setCharacterSize(24);
     score.setFillColor(sf::Color::White);
     score.setPosition(sirina*5.0/6,50);
@@ -275,6 +275,7 @@ void Game::initent()
 }
 void Game::initwin()
 {
+    prozor->create(sf::VideoMode::getFullscreenModes()[0],"RPG igra");
     visina=prozor->getSize().y;
     sirina=prozor->getSize().x;
     prozor->setFramerateLimit(60);
@@ -505,10 +506,9 @@ class State
 	State();
 	void loop();
 };
-State::State()
+State::State():igra(&prozor)
 {
-    prozor.create(sf::VideoMode::getFullscreenModes()[0],"RPG igra");
-    igra=Game(&prozor);
+
 }
 void State::loop()
 {
