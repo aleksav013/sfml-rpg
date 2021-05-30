@@ -115,9 +115,10 @@ void Enemy2::izracunajpoz(float igracx,float igracy,float dt)
 }
 class Enemy3:public Entity
 {
+    private:
+	float vx,vy;
     public:
 	static float time;
-	float vx,vy;
 	Enemy3():Entity() {}
 	Enemy3(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
 	void izracunajpoz(float dt);
@@ -175,11 +176,10 @@ class Game
 	std::vector<Powerup> pow;
 
 	int visina,sirina;
-	sf::RenderWindow prozor;
+	sf::RenderWindow *prozor;
 	
 	sf::CircleShape krug;
 	sf::RectangleShape health,healthblank,stomp,stompblank;
-
 	sf::Text healthtext,stomptext,fps,score;
 
 	void events();
@@ -201,7 +201,8 @@ class Game
 	void initent();
 	void initwin();
     public:
-	Game();
+	Game() {}
+	Game(sf::RenderWindow *glprozor);
 	void loop();
 };
 void Game::initshapes()
@@ -228,24 +229,23 @@ void Game::initui()
 {
     if(!font.loadFromFile("assets/fonts/LiberationMono-Regular.ttf"))
     {
-	std::cout<<"Font not found\n";
+	std::cerr<<"Font not found\n";
     }
-
-    healthtext.setFont(font);
+    //healthtext.setFont(font);
     healthtext.setString("Health");
     healthtext.setCharacterSize(24);
     healthtext.setFillColor(sf::Color::Black);
-    stomptext.setFont(font);
+    //stomptext.setFont(font);
     stomptext.setString("Stomp");
     stomptext.setCharacterSize(24);
     stomptext.setPosition(0,50);
     stomptext.setFillColor(sf::Color::Black);
 
-    fps.setFont(font);
+    //fps.setFont(font);
     fps.setCharacterSize(24);
     fps.setFillColor(sf::Color::White);
     fps.setPosition(sirina*5.0/6,0);
-    score.setFont(font);
+    //score.setFont(font);
     score.setCharacterSize(24);
     score.setFillColor(sf::Color::White);
     score.setPosition(sirina*5.0/6,50);
@@ -254,20 +254,20 @@ void Game::inittex()
 {
     if(!healthtex.loadFromFile("assets/images/healing.png"))
     {
-	std::cout<<"Texture not found\n";
+	std::cerr<<"Texture not found\n";
     }
     if(!neprijateljtex.loadFromFile("assets/images/nep.png"))
     {
-	std::cout<<"Texture not found\n";
+	std::cerr<<"Texture not found\n";
     }
-    for(size_t i=0;i<pow.size();i++) pow[i].telo.setTexture(&healthtex);
-    for(size_t i=0;i<nep1.size();i++) nep1[i].telo.setTexture(&neprijateljtex);
-    for(size_t i=0;i<nep2.size();i++) nep2[i].telo.setTexture(&neprijateljtex);
-    for(size_t i=0;i<nep3.size();i++) nep3[i].telo.setTexture(&neprijateljtex);
+    for(size_t i=0;i<pow.size();i++) pow.at(i).telo.setTexture(&healthtex);
+    for(size_t i=0;i<nep1.size();i++) nep1.at(i).telo.setTexture(&neprijateljtex);
+    for(size_t i=0;i<nep2.size();i++) nep2.at(i).telo.setTexture(&neprijateljtex);
+    for(size_t i=0;i<nep3.size();i++) nep3.at(i).telo.setTexture(&neprijateljtex);
 }
 void Game::initent()
 {
-    igrac = Player(sf::Vector2f((float)sirina/2,(float)visina/2),sf::Vector2f(100.0f,100.0f),sf::Color::White);
+    igrac = Player(sf::Vector2f(sirina/2.0,visina/2.0),sf::Vector2f(100.0f,100.0f),sf::Color::White);
     for(size_t i=0;i<20;i++) nep1.push_back(Enemy1(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Red));
     for(size_t i=0;i<7;i++) nep2.push_back(Enemy2(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Cyan));//(253,106,2)));
     for(size_t i=0;i<4;i++) nep3.push_back(Enemy3(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Yellow));
@@ -275,13 +275,13 @@ void Game::initent()
 }
 void Game::initwin()
 {
-    prozor.create(sf::VideoMode::getFullscreenModes()[0],"RPG igra");
-    visina=prozor.getSize().y;
-    sirina=prozor.getSize().x;
-    prozor.setFramerateLimit(60);
+    visina=prozor->getSize().y;
+    sirina=prozor->getSize().x;
+    prozor->setFramerateLimit(60);
 }
-Game::Game()
+Game::Game(sf::RenderWindow *glprozor)
 {
+    prozor=glprozor;
     initwin();
     initent();
     initshapes();
@@ -292,7 +292,7 @@ bool Game::gameover()
 {
     if(igrac.health<=0)
     {
-	prozor.close();
+	prozor->close();
 	std::cout<<"\n\nGame over. Wanna try again?\n";
 	return 1;
     }
@@ -313,28 +313,28 @@ void Game::stompmain()
 {
     igrac.stomptime=5;
     krug.setPosition(igrac.x,igrac.y);
-    for(size_t i=0;i<nep1.size();i++) if(nep1[i].ziv)
+    for(size_t i=0;i<nep1.size();i++) if(nep1.at(i).ziv)
     {
-	if(seseku(nep1[i].telo,krug))
+	if(seseku(nep1.at(i).telo,krug))
 	{
 	    igrac.xp+=5;
-	    nep1[i].ziv=0;
+	    nep1.at(i).ziv=0;
 	}
     }
-    for(size_t i=0;i<nep2.size();i++) if(nep2[i].ziv)
+    for(size_t i=0;i<nep2.size();i++) if(nep2.at(i).ziv)
     {
-	if(seseku(nep2[i].telo,krug))
+	if(seseku(nep2.at(i).telo,krug))
 	{
 	    igrac.xp+=5;
-	    nep2[i].ziv=0;
+	    nep2.at(i).ziv=0;
 	}
     }
-    for(size_t i=0;i<nep3.size();i++) if(nep3[i].ziv)
+    for(size_t i=0;i<nep3.size();i++) if(nep3.at(i).ziv)
     {
-	if(seseku(nep3[i].telo,krug))
+	if(seseku(nep3.at(i).telo,krug))
 	{
 	    igrac.xp+=5;
-	    nep3[i].ziv=0;
+	    nep3.at(i).ziv=0;
 	}
     }
 }
@@ -350,16 +350,16 @@ void Game::keyboard()
 void Game::events()
 {
     sf::Event evnt;
-    while(prozor.pollEvent(evnt))
+    while(prozor->pollEvent(evnt))
     {
 	switch(evnt.type)
 	{
 	    case sf::Event::EventType::Closed:
-		prozor.close();
+		prozor->close();
 		break;
 	    case sf::Event::EventType::Resized:
-		visina=prozor.getSize().y;
-		sirina=prozor.getSize().x;
+		visina=prozor->getSize().y;
+		sirina=prozor->getSize().x;
 		std::cout<<"Nova velicina prozora je:"<<sirina<<'x'<<visina<<std::endl;
 		break;
 	    default:
@@ -370,82 +370,82 @@ void Game::events()
 }
 void Game::draw()
 {
-    prozor.clear();
-    if(igrac.stomptime>4.6) prozor.draw(krug);
-    prozor.draw(igrac.telo);
-    for(size_t i=0;i<nep1.size();i++) if(nep1[i].ziv) prozor.draw(nep1[i].telo);
-    for(size_t i=0;i<nep2.size();i++) if(nep2[i].ziv) prozor.draw(nep2[i].telo);
-    for(size_t i=0;i<nep3.size();i++) if(nep3[i].ziv) prozor.draw(nep3[i].telo);
-    for(size_t i=0;i<pow.size();i++) if(pow[i].ziv) prozor.draw(pow[i].telo);
+    prozor->clear();
+    if(igrac.stomptime>4.6) prozor->draw(krug);
+    prozor->draw(igrac.telo);
+    for(size_t i=0;i<nep1.size();i++) if(nep1.at(i).ziv) prozor->draw(nep1.at(i).telo);
+    for(size_t i=0;i<nep2.size();i++) if(nep2.at(i).ziv) prozor->draw(nep2.at(i).telo);
+    for(size_t i=0;i<nep3.size();i++) if(nep3.at(i).ziv) prozor->draw(nep3.at(i).telo);
+    for(size_t i=0;i<pow.size();i++) if(pow.at(i).ziv) prozor->draw(pow.at(i).telo);
 
-    prozor.draw(healthblank);
-    prozor.draw(health);
-    prozor.draw(healthtext);
-    prozor.draw(stompblank);
-    prozor.draw(stomp);
-    prozor.draw(stomptext);
-    prozor.draw(fps);
-    prozor.draw(score);
+    prozor->draw(healthblank);
+    prozor->draw(health);
+    prozor->draw(healthtext);
+    prozor->draw(stompblank);
+    prozor->draw(stomp);
+    prozor->draw(stomptext);
+    prozor->draw(fps);
+    prozor->draw(score);
 
-    prozor.display();
+    prozor->display();
 }
 void Game::position()
 {
     igrac.telo.setPosition(igrac.x,igrac.y);
-    for(size_t i=0;i<nep1.size();i++) if(nep1[i].ziv)
+    for(size_t i=0;i<nep1.size();i++) if(nep1.at(i).ziv)
     {
-	nep1[i].izracunajbrzinu(igrac.x,igrac.y);
-	nep1[i].izracunajpoz(dt);
-	nep1[i].telo.setPosition(nep1[i].x,nep1[i].y);
+	nep1.at(i).izracunajbrzinu(igrac.x,igrac.y);
+	nep1.at(i).izracunajpoz(dt);
+	nep1.at(i).telo.setPosition(nep1.at(i).x,nep1.at(i).y);
     }
-    for(size_t i=0;i<nep2.size();i++) if(nep2[i].ziv)
+    for(size_t i=0;i<nep2.size();i++) if(nep2.at(i).ziv)
     {
-	nep2[i].izracunajbrzinu(igrac.x,igrac.y,dt);
-	nep2[i].izracunajpoz(igrac.x,igrac.y,dt);
-	nep2[i].telo.setPosition(nep2[i].x,nep2[i].y);
+	nep2.at(i).izracunajbrzinu(igrac.x,igrac.y,dt);
+	nep2.at(i).izracunajpoz(igrac.x,igrac.y,dt);
+	nep2.at(i).telo.setPosition(nep2.at(i).x,nep2.at(i).y);
     }
-    for(size_t i=0;i<nep3.size();i++) if(nep3[i].ziv)
+    for(size_t i=0;i<nep3.size();i++) if(nep3.at(i).ziv)
     {
-	nep3[i].izracunajbrzinu(sirina,visina);
-	nep3[i].izracunajpoz(dt);
-	nep3[i].telo.setPosition(nep3[i].x,nep3[i].y);
+	nep3.at(i).izracunajbrzinu(sirina,visina);
+	nep3.at(i).izracunajpoz(dt);
+	nep3.at(i).telo.setPosition(nep3.at(i).x,nep3.at(i).y);
     }
-    for(size_t i=0;i<pow.size();i++) if(pow[i].ziv)
+    for(size_t i=0;i<pow.size();i++) if(pow.at(i).ziv)
     {
-	pow[i].telo.setPosition(pow[i].x,pow[i].y);
+	pow.at(i).telo.setPosition(pow.at(i).x,pow.at(i).y);
     }
 }
 void Game::checkcollision()
 {
-    for(size_t i=0;i<nep1.size();i++) if(nep1[i].ziv)
+    for(size_t i=0;i<nep1.size();i++) if(nep1.at(i).ziv)
     {
-	if(seseku(nep1[i].telo,igrac.telo))
+	if(seseku(nep1.at(i).telo,igrac.telo))
 	{
-	    nep1[i].ziv=0;
+	    nep1.at(i).ziv=0;
 	    igrac.health-=Global::rng()%4+1; // 1-4 dmg
 	}
     }
-    for(size_t i=0;i<nep2.size();i++) if(nep2[i].ziv)
+    for(size_t i=0;i<nep2.size();i++) if(nep2.at(i).ziv)
     {
-	if(seseku(nep2[i].telo,igrac.telo))
+	if(seseku(nep2.at(i).telo,igrac.telo))
 	{
-	    nep2[i].ziv=0;
+	    nep2.at(i).ziv=0;
 	    igrac.health-=Global::rng()%8+1; // 1-8 dmg
 	}
     }
-    for(size_t i=0;i<nep3.size();i++) if(nep3[i].ziv)
+    for(size_t i=0;i<nep3.size();i++) if(nep3.at(i).ziv)
     {
-	if(seseku(nep3[i].telo,igrac.telo))
+	if(seseku(nep3.at(i).telo,igrac.telo))
 	{
-	    nep3[i].ziv=0;
+	    nep3.at(i).ziv=0;
 	    igrac.health-=Global::rng()%12+1; // 1-12 dmg
 	}
     }
-    for(size_t i=0;i<pow.size();i++) if(pow[i].ziv)
+    for(size_t i=0;i<pow.size();i++) if(pow.at(i).ziv)
     {
-	if(seseku(pow[i].telo,igrac.telo))
+	if(seseku(pow.at(i).telo,igrac.telo))
 	{
-	    pow[i].ziv=0;
+	    pow.at(i).ziv=0;
 	    igrac.health+=Global::rng()%20+21; // 20-40 heal
 	}
     }
@@ -460,22 +460,22 @@ void Game::respawn()
     if(Enemy1::time<0)
     {
 	Enemy1::time=8;
-	for(size_t i=0;i<nep1.size();i++) nep1[i].respawn(sirina,visina);
+	for(size_t i=0;i<nep1.size();i++) nep1.at(i).respawn(sirina,visina);
     }
     if(Enemy2::time<0)
     {
 	Enemy2::time=14;
-	for(size_t i=0;i<nep2.size();i++) nep2[i].respawn(sirina,visina);
+	for(size_t i=0;i<nep2.size();i++) nep2.at(i).respawn(sirina,visina);
     }
     if(Enemy3::time<0)
     {
 	Enemy3::time=10;
-	for(size_t i=0;i<nep3.size();i++) nep3[i].respawn(sirina,visina);
+	for(size_t i=0;i<nep3.size();i++) nep3.at(i).respawn(sirina,visina);
     }
     if(Powerup::time<0)
     {
 	Powerup::time=20;
-	for(size_t i=0;i<pow.size();i++) pow[i].respawn(sirina,visina);
+	for(size_t i=0;i<pow.size();i++) pow.at(i).respawn(sirina,visina);
     }
 }
 void Game::run()
@@ -492,16 +492,31 @@ void Game::run()
 }
 void Game::loop()
 {
-    while(prozor.isOpen())
-    {
-	events();
-	run();
-	draw();
-    }
+    events();
+    run();
+    draw();
+}
+class State
+{
+    private:
+	sf::RenderWindow prozor;
+	Game igra;
+    public:
+	State();
+	void loop();
+};
+State::State()
+{
+    prozor.create(sf::VideoMode::getFullscreenModes()[0],"RPG igra");
+    igra=Game(&prozor);
+}
+void State::loop()
+{
+    while(prozor.isOpen()) igra.loop();
 }
 int main()
 {
-    Game igra;
-    igra.loop();
+    State program;
+    program.loop();
     return 0;
 }
