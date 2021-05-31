@@ -182,7 +182,6 @@ class Game
 	sf::RectangleShape health,healthblank,stomp,stompblank;
 	sf::Text healthtext,stomptext,fps,score;
 
-	void events();
 	void keyboard();
 	void run();
 	void draw();
@@ -199,11 +198,11 @@ class Game
 	void initui();
 	void inittex();
 	void initent();
-	void initwin();
+	void updatewin();
     public:
 	Game() {}
 	Game(sf::RenderWindow *glprozor);
-	void loop();
+	void loop(bool ischanged,bool pause);
 };
 void Game::initshapes()
 {
@@ -273,20 +272,23 @@ void Game::initent()
     for(size_t i=0;i<4;i++) nep3.push_back(Enemy3(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Yellow));
     pow.push_back(Powerup(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::White));
 }
-void Game::initwin()
+void Game::updatewin()
 {
-    prozor->create(sf::VideoMode::getFullscreenModes()[0],"RPG igra");
     visina=prozor->getSize().y;
     sirina=prozor->getSize().x;
-    prozor->setFramerateLimit(60);
+    healthblank.setSize(sf::Vector2f(sirina/3.0,50.0));
+    stompblank.setSize(sf::Vector2f(sirina/3.0,50.0));
+    fps.setPosition(sirina*5.0/6,0);
+    score.setPosition(sirina*5.0/6,50);
+    updateui();
 }
 Game::Game(sf::RenderWindow *glprozor)
 {
     prozor=glprozor;
-    initwin();
+    initui();
+    updatewin();
     initent();
     initshapes();
-    initui();
     inittex();
 }
 bool Game::gameover()
@@ -302,13 +304,13 @@ bool Game::gameover()
 void Game::updatedt()
 {
     dt=sat.restart().asMicroseconds()/1000000.0;
-    fps.setString("fps: "+std::to_string(1/dt));
-    score.setString("score: "+std::to_string(time.getElapsedTime().asMilliseconds()/10));
 }
 void Game::updateui()
 {
     health.setSize(sf::Vector2f(sirina*igrac.health/300.0,50.0));
     stomp.setSize(sf::Vector2f(sirina*(5-igrac.stomptime)/15.0,50.0));
+    fps.setString("fps: "+std::to_string((int)(1/dt)));
+    score.setString("xp: "+std::to_string(igrac.xp));
 }
 void Game::stompmain()
 {
@@ -326,7 +328,7 @@ void Game::stompmain()
     {
 	if(seseku(nep2.at(i).telo,krug))
 	{
-	    igrac.xp+=5;
+	    igrac.xp+=10;
 	    nep2.at(i).ziv=0;
 	}
     }
@@ -334,7 +336,7 @@ void Game::stompmain()
     {
 	if(seseku(nep3.at(i).telo,krug))
 	{
-	    igrac.xp+=5;
+	    igrac.xp+=20;
 	    nep3.at(i).ziv=0;
 	}
     }
@@ -347,27 +349,6 @@ void Game::keyboard()
     if((sf::Keyboard::isKeyPressed(sf::Keyboard::S)||sf::Keyboard::isKeyPressed(sf::Keyboard::Down))&&igrac.y<visina) igrac.y+=dist;
     if((sf::Keyboard::isKeyPressed(sf::Keyboard::D)||sf::Keyboard::isKeyPressed(sf::Keyboard::Right))&&igrac.x<sirina) igrac.x+=dist;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) if(igrac.stomptime<=0) stompmain();
-}
-void Game::events()
-{
-    sf::Event evnt;
-    while(prozor->pollEvent(evnt))
-    {
-	switch(evnt.type)
-	{
-	    case sf::Event::EventType::Closed:
-		prozor->close();
-		break;
-	    case sf::Event::EventType::Resized:
-		visina=prozor->getSize().y;
-		sirina=prozor->getSize().x;
-		std::cout<<"Nova velicina prozora je:"<<sirina<<'x'<<visina<<std::endl;
-		break;
-	    default:
-		break;
-	}
-    }
-    keyboard();
 }
 void Game::draw()
 {
@@ -484,35 +465,89 @@ void Game::run()
     if(gameover()) return;
 
     updateui();
-    updatedt();
     igrac.updatest(dt);
 
     respawn();
     position();
     checkcollision();
 }
-void Game::loop()
+void Game::loop(bool ischanged,bool pause)
 {
-    events();
-    run();
+    if(ischanged) updatewin();
+    if(!pause)
+    {
+	keyboard();
+	run();
+    }
+    updatedt();
     draw();
 }
 class State
 {
     private:
 	sf::RenderWindow prozor;
-	Game igra;
+	int visina,sirina;
+	bool ischanged=0,pause=0;
+
+	void events();
+	void keyboard();
     public:
 	State();
 	void loop();
 };
-State::State():igra(&prozor)
+State::State()
 {
-
+    prozor.create(sf::VideoMode::getFullscreenModes()[0],"RPG igra");
+    prozor.setFramerateLimit(60);
+    visina=prozor.getSize().y;
+    sirina=prozor.getSize().x;
+}
+void State::events()
+{
+    sf::Event evnt;
+    while(prozor.pollEvent(evnt))
+    {
+	switch(evnt.type)
+	{
+	    case sf::Event::EventType::Closed:
+		prozor.close();
+		break;
+	    case sf::Event::EventType::Resized:
+		std::cout<<"Nova velicina prozora je:"<<prozor.getSize().x<<'x'<<prozor.getSize().y<<std::endl;
+		ischanged=1;
+		visina=prozor.getSize().y;
+		sirina=prozor.getSize().x;
+		prozor.setView(sf::View(sf::FloatRect(0,0,sirina,visina)));
+		break;
+	    case sf::Event::EventType::KeyPressed:
+		keyboard();
+		break;
+	    default:
+		break;
+	}
+    }
+}
+void State::keyboard()
+{
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::P))
+    {
+	pause=true;
+    }
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+    {
+	pause=false;
+	ischanged=1;
+    }
 }
 void State::loop()
 {
-    while(prozor.isOpen()) igra.loop();
+    Game *igra=new Game(&prozor);
+    while(prozor.isOpen())
+    {
+	events();
+	igra->loop(ischanged,pause);
+	if(ischanged) ischanged=0;
+    }
 }
 int main()
 {
