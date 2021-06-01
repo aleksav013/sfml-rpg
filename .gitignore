@@ -1,2 +1,4 @@
+sfml-rpg
+*.o
 *.out
 *.exe

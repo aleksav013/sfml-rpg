@@ -1,209 +1,7 @@
+#include"includes/Global.hpp"
+#include"includes/Game.hpp"
+
 #include<iostream>
-#include<SFML/Graphics.hpp>
-#include<random>
-#define seseku(a,b) a.getGlobalBounds().intersects(b.getGlobalBounds())
-class Global
-{
-    public:
-	static std::mt19937 rng;
-};
-std::mt19937 Global::rng = std::mt19937(time(0));
-class Entity
-{
-    public:
-	bool ziv=1;
-	float x,y;
-	sf::RectangleShape telo;
-	Entity() {} Entity(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
-	void respawn(int sirina,int visina);
-};
-Entity::Entity(sf::Vector2f pozicija, sf::Vector2f velicina,sf::Color boja)
-{
-    telo.setSize(velicina);
-    telo.setFillColor(boja);
-    telo.setOrigin(sf::Vector2f(telo.getSize().x/2,telo.getSize().y/2));
-    x=pozicija.x;
-    y=pozicija.y; 
-}
-void Entity::respawn(int sirina,int visina)
-{
-    if(!ziv)
-    {
-	x=Global::rng()%sirina;
-	y=Global::rng()%visina;
-	ziv=1;
-    }
-}
-class Powerup:public Entity 
-{
-    public:
-	static float time;
-	Powerup():Entity() {}
-	Powerup(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
-};
-float Powerup::time=20;
-Powerup::Powerup(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja)
-{
-
-}
-class Enemy1:public Entity
-{
-    private:
-	float vx,vy;
-    public:
-	static float time;
-	Enemy1():Entity() {}
-	Enemy1(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
-	void izracunajbrzinu(float igracx,float igracy);
-	void izracunajpoz(float dt);
-};
-float Enemy1::time=8;
-Enemy1::Enemy1(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja) {}
-void Enemy1::izracunajbrzinu(float igracx,float igracy)
-{
-    float k=(igracy-y)/(igracx-x);
-    float r=150.0;
-    float dx=r/std::sqrt(1+k*k);
-    if(igracx-x<0) dx=-dx;
-    float dy=k*dx;
-    vx=dx;
-    vy=dy;
-}
-void Enemy1::izracunajpoz(float dt)
-{
-    x+=vx*dt;
-    y+=vy*dt;
-}
-class Enemy2:public Entity
-{
-    private:
-	float vx,vy;
-    public:
-	static float time;
-	Enemy2():Entity() {}
-	Enemy2(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
-	void izracunajbrzinu(float igracx,float igracy,float dt);
-	void izracunajpoz(float igracx,float igracy,float dt);
-};
-float Enemy2::time=14;
-Enemy2::Enemy2(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja)
-{
-    vx=vy=0;
-}
-void Enemy2::izracunajbrzinu(float igracx,float igracy,float dt)
-{
-    float k=(igracy-y)/(igracx-x);
-    float r=200.0*dt;
-    float dx=r/std::sqrt(1+k*k);
-    if(igracx-x<0) dx=-dx;
-    float dy=k*dx;
-    vx+=dx;
-    vy+=dy;
-}
-void Enemy2::izracunajpoz(float igracx,float igracy,float dt)
-{
-    if((x+vx-igracx)*(x+vx-igracx)+(y+vy-igracy)*(y+vy-igracy)<(x-igracx)*(x-igracx)+(y-igracy)*(y-igracy))
-    {
-	x+=vx*dt*3;
-	y+=vy*dt*3;
-    }
-    else
-    {
-	x+=vx*dt;
-	y+=vy*dt;
-    }
-}
-class Enemy3:public Entity
-{
-    private:
-	float vx,vy;
-    public:
-	static float time;
-	Enemy3():Entity() {}
-	Enemy3(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
-	void izracunajpoz(float dt);
-	void izracunajbrzinu(int sirina,int duzina);
-};
-float Enemy3::time=10;
-Enemy3::Enemy3(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja)
-{
-    vx=vy=500.0;
-}
-void Enemy3::izracunajpoz(float dt)
-{
-    x+=vx*dt;
-    y+=vy*dt;
-}
-void Enemy3::izracunajbrzinu(int sirina,int visina)
-{
-    if(x<0||x>sirina) vx=-vx;
-    if(y<0||y>visina) vy=-vy;
-}
-class Player:public Entity
-{
-    public:
-	int health,xp;
-	int stomprad=270;
-	float stomptime;
-
-	Player():Entity() {}
-	Player(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
-	void updatest(float dt);
-};
-Player::Player(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja)
-{
-    health=100;
-    stomptime=0;
-    xp=0;
-}
-void Player::updatest(float dt)
-{
-    if(stomptime>0) stomptime-=dt;
-    else stomptime=0;
-}
-class Game
-{
-    private:
-	sf::Font font;
-	sf::Texture healthtex,neprijateljtex;
-	float dt;
-	sf::Clock sat,time;
-
-	Player igrac;
-	std::vector<Enemy1> nep1;
-	std::vector<Enemy2> nep2;
-	std::vector<Enemy3> nep3;
-	std::vector<Powerup> pow;
-
-	int visina,sirina;
-	sf::RenderWindow *prozor;
-	
-	sf::CircleShape krug;
-	sf::RectangleShape health,healthblank,stomp,stompblank;
-	sf::Text healthtext,stomptext,fps,score;
-
-	void keyboard();
-	void run();
-	void draw();
-	void stompmain();
-
-	void updateui();
-	void updatedt();
-	bool gameover();
-	void respawn();
-	void position();
-	void checkcollision();
-
-	void initshapes();
-	void initui();
-	void inittex();
-	void initent();
-	void updatewin();
-    public:
-	Game() {}
-	Game(sf::RenderWindow *glprozor);
-	void loop(bool ischanged,bool pause);
-};
 void Game::initshapes()
 {
     krug.setRadius(igrac.stomprad);
@@ -226,7 +24,7 @@ void Game::initshapes()
 }
 void Game::initui()
 {
-    if(!font.loadFromFile("assets/fonts/LiberationMono-Regular.ttf"))
+    if(!font.loadFromFile("../assets/fonts/LiberationMono-Regular.ttf"))
     {
 	std::cerr<<"Font not found\n";
     }
@@ -251,11 +49,11 @@ void Game::initui()
 }
 void Game::inittex()
 {
-    if(!healthtex.loadFromFile("assets/images/healing.png"))
+    if(!healthtex.loadFromFile("../assets/images/healing.png"))
     {
 	std::cerr<<"Texture not found\n";
     }
-    if(!neprijateljtex.loadFromFile("assets/images/nep.png"))
+    if(!neprijateljtex.loadFromFile("../assets/images/nep.png"))
     {
 	std::cerr<<"Texture not found\n";
     }
@@ -481,77 +279,4 @@ void Game::loop(bool ischanged,bool pause)
     }
     updatedt();
     draw();
-}
-class State
-{
-    private:
-	sf::RenderWindow prozor;
-	int visina,sirina;
-	bool ischanged=0,pause=0;
-
-	void events();
-	void keyboard();
-    public:
-	State();
-	void loop();
-};
-State::State()
-{
-    prozor.create(sf::VideoMode::getFullscreenModes()[0],"RPG igra");
-    prozor.setFramerateLimit(60);
-    visina=prozor.getSize().y;
-    sirina=prozor.getSize().x;
-}
-void State::events()
-{
-    sf::Event evnt;
-    while(prozor.pollEvent(evnt))
-    {
-	switch(evnt.type)
-	{
-	    case sf::Event::EventType::Closed:
-		prozor.close();
-		break;
-	    case sf::Event::EventType::Resized:
-		std::cout<<"Nova velicina prozora je:"<<prozor.getSize().x<<'x'<<prozor.getSize().y<<std::endl;
-		ischanged=1;
-		visina=prozor.getSize().y;
-		sirina=prozor.getSize().x;
-		prozor.setView(sf::View(sf::FloatRect(0,0,sirina,visina)));
-		break;
-	    case sf::Event::EventType::KeyPressed:
-		keyboard();
-		break;
-	    default:
-		break;
-	}
-    }
-}
-void State::keyboard()
-{
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::P))
-    {
-	pause=true;
-    }
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-    {
-	pause=false;
-	ischanged=1;
-    }
-}
-void State::loop()
-{
-    Game *igra=new Game(&prozor);
-    while(prozor.isOpen())
-    {
-	events();
-	igra->loop(ischanged,pause);
-	if(ischanged) ischanged=0;
-    }
-}
-int main()
-{
-    State program;
-    program.loop();
-    return 0;
 }
