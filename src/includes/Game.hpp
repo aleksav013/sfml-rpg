@@ -11,7 +11,7 @@ class Game
 {
     private:
 	sf::Font font;
-	sf::Texture healthtex,neprijateljtex;
+	sf::Texture *healthtex,*neprijateljtex;
 	float dt;
 	sf::Clock sat,time;
 
@@ -30,12 +30,10 @@ class Game
 
 	void keyboard();
 	void run();
-	void draw();
 	void stompmain();
 
 	void updateui();
 	void updatedt();
-	bool gameover();
 	void respawn();
 	void position();
 	void checkcollision();
@@ -47,8 +45,10 @@ class Game
 	void updatewin();
     public:
 	Game() {}
-	Game(sf::RenderWindow *glprozor);
+	Game(sf::RenderWindow *glprozor,sf::Font font,sf::Texture *neprijateljtex,sf::Texture *healthtex);
 	void loop(bool ischanged,bool pause);
+	void draw();
+	bool gameover();
 };
 
 #endif

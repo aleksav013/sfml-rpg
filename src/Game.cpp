@@ -1,7 +1,6 @@
 #include"includes/Global.hpp"
 #include"includes/Game.hpp"
 
-#include<iostream>
 void Game::initshapes()
 {
     krug.setRadius(igrac.stomprad);
@@ -24,10 +23,6 @@ void Game::initshapes()
 }
 void Game::initui()
 {
-    if(!font.loadFromFile("assets/fonts/LiberationMono-Regular.ttf"))
-    {
-	std::cerr<<"Font not found\n";
-    }
     healthtext.setFont(font);
     healthtext.setString("Health");
     healthtext.setCharacterSize(24);
@@ -49,18 +44,10 @@ void Game::initui()
 }
 void Game::inittex()
 {
-    if(!healthtex.loadFromFile("assets/images/healing.png"))
-    {
-	std::cerr<<"Texture not found\n";
-    }
-    if(!neprijateljtex.loadFromFile("assets/images/nep.png"))
-    {
-	std::cerr<<"Texture not found\n";
-    }
-    for(size_t i=0;i<pow.size();i++) pow.at(i).telo.setTexture(&healthtex);
-    for(size_t i=0;i<nep1.size();i++) nep1.at(i).telo.setTexture(&neprijateljtex);
-    for(size_t i=0;i<nep2.size();i++) nep2.at(i).telo.setTexture(&neprijateljtex);
-    for(size_t i=0;i<nep3.size();i++) nep3.at(i).telo.setTexture(&neprijateljtex);
+    for(size_t i=0;i<pow.size();i++) pow.at(i).telo.setTexture(healthtex);
+    for(size_t i=0;i<nep1.size();i++) nep1.at(i).telo.setTexture(neprijateljtex);
+    for(size_t i=0;i<nep2.size();i++) nep2.at(i).telo.setTexture(neprijateljtex);
+    for(size_t i=0;i<nep3.size();i++) nep3.at(i).telo.setTexture(neprijateljtex);
 }
 void Game::initent()
 {
@@ -80,9 +67,13 @@ void Game::updatewin()
     score.setPosition(sirina*5.0/6,50);
     updateui();
 }
-Game::Game(sf::RenderWindow *glprozor)
+Game::Game(sf::RenderWindow *glprozor,sf::Font mainfont,sf::Texture *healthtexture,sf::Texture *neprijateljtexture)
 {
     prozor=glprozor;
+    font=mainfont;
+    healthtex=healthtexture;
+    neprijateljtex=neprijateljtexture;
+
     updatewin();
     initui();
     initshapes();
@@ -91,12 +82,7 @@ Game::Game(sf::RenderWindow *glprozor)
 }
 bool Game::gameover()
 {
-    if(igrac.health<=0)
-    {
-	prozor->close();
-	std::cout<<"\n\nGame over. Wanna try again?\n";
-	return 1;
-    }
+    if(igrac.health<=0) return 1;
     return 0;
 }
 void Game::updatedt()
@@ -150,7 +136,6 @@ void Game::keyboard()
 }
 void Game::draw()
 {
-    prozor->clear();
     if(igrac.stomptime>4.6) prozor->draw(krug);
     prozor->draw(igrac.telo);
     for(size_t i=0;i<nep1.size();i++) if(nep1.at(i).ziv) prozor->draw(nep1.at(i).telo);
@@ -166,8 +151,6 @@ void Game::draw()
     prozor->draw(stomptext);
     prozor->draw(fps);
     prozor->draw(score);
-
-    prozor->display();
 }
 void Game::position()
 {
@@ -260,8 +243,6 @@ void Game::respawn()
 }
 void Game::run()
 {
-    if(gameover()) return;
-    updateui();
     igrac.updatest(dt);
     respawn();
     position();
@@ -275,6 +256,6 @@ void Game::loop(bool ischanged,bool pause)
 	keyboard();
 	run();
     }
+    updateui();
     updatedt();
-    draw();
 }
