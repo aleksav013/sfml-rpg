@@ -24,7 +24,7 @@ void Game::initshapes()
 }
 void Game::initui()
 {
-    if(!font.loadFromFile("../assets/fonts/LiberationMono-Regular.ttf"))
+    if(!font.loadFromFile("assets/fonts/LiberationMono-Regular.ttf"))
     {
 	std::cerr<<"Font not found\n";
     }
@@ -49,11 +49,11 @@ void Game::initui()
 }
 void Game::inittex()
 {
-    if(!healthtex.loadFromFile("../assets/images/healing.png"))
+    if(!healthtex.loadFromFile("assets/images/healing.png"))
     {
 	std::cerr<<"Texture not found\n";
     }
-    if(!neprijateljtex.loadFromFile("../assets/images/nep.png"))
+    if(!neprijateljtex.loadFromFile("assets/images/nep.png"))
     {
 	std::cerr<<"Texture not found\n";
     }
@@ -83,10 +83,10 @@ void Game::updatewin()
 Game::Game(sf::RenderWindow *glprozor)
 {
     prozor=glprozor;
-    initui();
     updatewin();
-    initent();
+    initui();
     initshapes();
+    initent();
     inittex();
 }
 bool Game::gameover()
@@ -261,10 +261,8 @@ void Game::respawn()
 void Game::run()
 {
     if(gameover()) return;
-
     updateui();
     igrac.updatest(dt);
-
     respawn();
     position();
     checkcollision();
