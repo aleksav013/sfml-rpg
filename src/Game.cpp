@@ -3,12 +3,6 @@
 
 void Game::initshapes()
 {
-    krug.setRadius(igrac.stomprad);
-    krug.setFillColor(sf::Color::Black);
-    krug.setOutlineThickness(10);
-    krug.setOutlineColor(sf::Color::White);
-    krug.setOrigin(krug.getRadius(),krug.getRadius());
-
     health.setSize(sf::Vector2f(sirina/3.0,50.0));
     health.setFillColor(sf::Color::Red);
     healthblank.setSize(sf::Vector2f(sirina/3.0,50.0));
@@ -23,31 +17,31 @@ void Game::initshapes()
 }
 void Game::initui()
 {
-    healthtext.setFont(font);
+    healthtext.setFont(*font["default"]);
     healthtext.setString("Health");
     healthtext.setCharacterSize(24);
     healthtext.setFillColor(sf::Color::Black);
-    stomptext.setFont(font);
+    stomptext.setFont(*font["default"]);
     stomptext.setString("Stomp");
     stomptext.setCharacterSize(24);
     stomptext.setPosition(0,50);
     stomptext.setFillColor(sf::Color::Black);
 
-    fps.setFont(font);
+    fps.setFont(*font["default"]);
     fps.setCharacterSize(24);
     fps.setFillColor(sf::Color::White);
     fps.setPosition(sirina*5.0/6,0);
-    score.setFont(font);
+    score.setFont(*font["default"]);
     score.setCharacterSize(24);
     score.setFillColor(sf::Color::White);
     score.setPosition(sirina*5.0/6,50);
 }
 void Game::inittex()
 {
-    for(size_t i=0;i<pow.size();i++) pow.at(i).telo.setTexture(healthtex);
-    for(size_t i=0;i<nep1.size();i++) nep1.at(i).telo.setTexture(neprijateljtex);
-    for(size_t i=0;i<nep2.size();i++) nep2.at(i).telo.setTexture(neprijateljtex);
-    for(size_t i=0;i<nep3.size();i++) nep3.at(i).telo.setTexture(neprijateljtex);
+    for(size_t i=0;i<pow.size();i++) pow.at(i).telo.setTexture(tex["health"]);
+    for(size_t i=0;i<nep1.size();i++) nep1.at(i).telo.setTexture(tex["neprijatelj"]);
+    for(size_t i=0;i<nep2.size();i++) nep2.at(i).telo.setTexture(tex["neprijatelj"]);
+    for(size_t i=0;i<nep3.size();i++) nep3.at(i).telo.setTexture(tex["neprijatelj"]);
 }
 void Game::initent()
 {
@@ -67,12 +61,11 @@ void Game::updatewin()
     score.setPosition(sirina*5.0/6,50);
     updateui();
 }
-Game::Game(sf::RenderWindow *glprozor,sf::Font mainfont,sf::Texture *healthtexture,sf::Texture *neprijateljtexture)
+Game::Game(sf::RenderWindow *glprozor,std::map<std::string,sf::Font*> mainfont,std::map<std::string,sf::Texture*> maintex)
 {
     prozor=glprozor;
     font=mainfont;
-    healthtex=healthtexture;
-    neprijateljtex=neprijateljtexture;
+    tex=maintex;
 
     updatewin();
     initui();
@@ -99,10 +92,10 @@ void Game::updateui()
 void Game::stompmain()
 {
     igrac.stomptime=5;
-    krug.setPosition(igrac.x,igrac.y);
+    igrac.krug.setPosition(igrac.x,igrac.y);
     for(size_t i=0;i<nep1.size();i++) if(nep1.at(i).ziv)
     {
-	if(seseku(nep1.at(i).telo,krug))
+	if(seseku(nep1.at(i).telo,igrac.krug))
 	{
 	    igrac.xp+=5;
 	    nep1.at(i).ziv=0;
@@ -110,7 +103,7 @@ void Game::stompmain()
     }
     for(size_t i=0;i<nep2.size();i++) if(nep2.at(i).ziv)
     {
-	if(seseku(nep2.at(i).telo,krug))
+	if(seseku(nep2.at(i).telo,igrac.krug))
 	{
 	    igrac.xp+=10;
 	    nep2.at(i).ziv=0;
@@ -118,7 +111,7 @@ void Game::stompmain()
     }
     for(size_t i=0;i<nep3.size();i++) if(nep3.at(i).ziv)
     {
-	if(seseku(nep3.at(i).telo,krug))
+	if(seseku(nep3.at(i).telo,igrac.krug))
 	{
 	    igrac.xp+=20;
 	    nep3.at(i).ziv=0;
@@ -136,7 +129,7 @@ void Game::keyboard()
 }
 void Game::draw()
 {
-    if(igrac.stomptime>4.6) prozor->draw(krug);
+    if(igrac.stomptime>4.6) prozor->draw(igrac.krug);
     prozor->draw(igrac.telo);
     for(size_t i=0;i<nep1.size();i++) if(nep1.at(i).ziv) prozor->draw(nep1.at(i).telo);
     for(size_t i=0;i<nep2.size();i++) if(nep2.at(i).ziv) prozor->draw(nep2.at(i).telo);

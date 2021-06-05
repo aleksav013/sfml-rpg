@@ -18,15 +18,18 @@ void State::initwin()
 }
 void State::initassets()
 {
-    if(!font.loadFromFile("assets/fonts/LiberationMono-Regular.ttf"))
+    font["default"] = new sf::Font;
+    tex["neprijatelj"] = new sf::Texture;
+    tex["health"] = new sf::Texture;
+    if(!font["default"]->loadFromFile("assets/fonts/LiberationMono-Regular.ttf"))
     {
 	std::cerr<<"Font not found\n";
     }
-    if(!healthtex.loadFromFile("assets/images/healing.png"))
+    if(!tex["health"]->loadFromFile("assets/images/healing.png"))
     {
 	std::cerr<<"Texture not found\n";
     }
-    if(!neprijateljtex.loadFromFile("assets/images/nep.png"))
+    if(!tex["neprijatelj"]->loadFromFile("assets/images/nep.png"))
     {
 	std::cerr<<"Texture not found\n";
     }
@@ -84,14 +87,14 @@ void State::initui()
     podloga.setSize(sf::Vector2f(600.0f,120.0f));
     podloga.setOrigin(podloga.getSize().x/2.0,podloga.getSize().y/2.0);
 
-    pausetext.setFont(font);
+    pausetext.setFont(*font["default"]);
     pausetext.setString("Pauza\nPritisnite Esc da nastavite igru");
     pausetext.setCharacterSize(24);
     pausetext.setStyle(sf::Text::Bold);
     pausetext.setFillColor(sf::Color::White);
     pausetext.setOrigin(pausetext.getGlobalBounds().width/2.0,pausetext.getGlobalBounds().height/2.0);
 
-    krajtext.setFont(font);
+    krajtext.setFont(*font["default"]);
     krajtext.setString("Kraj igre\nPritisnite Y da zapocnete novu igru");
     krajtext.setCharacterSize(24);
     krajtext.setStyle(sf::Text::Bold);
@@ -108,7 +111,7 @@ void State::updateui()
 }
 void State::loop()
 {
-    Game *igra=new Game(&prozor,font,&healthtex,&neprijateljtex);
+    Game *igra=new Game(&prozor,font,tex);
     while(prozor.isOpen())
     {
 	events();
@@ -116,13 +119,12 @@ void State::loop()
 	igra->loop(ischanged,pause||kraj);
 	if(ischanged) updateui();
 
-	prozor.clear();
 	igra->draw();
 	if(kraj)
 	{
 	    prozor.draw(podloga);
 	    prozor.draw(krajtext);
-	    if(newgame) igra=new Game(&prozor,font,&healthtex,&neprijateljtex);
+	    if(newgame) igra=new Game(&prozor,font,tex);
 	}
 	if(pause)
 	{
@@ -130,6 +132,7 @@ void State::loop()
 	    prozor.draw(pausetext);
 	}
 	prozor.display();
+	prozor.clear();
 
 	ischanged=0;
 	newgame=0;

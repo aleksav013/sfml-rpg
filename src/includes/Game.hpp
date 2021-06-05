@@ -10,8 +10,8 @@
 class Game
 {
     private:
-	sf::Font font;
-	sf::Texture *healthtex,*neprijateljtex;
+	std::map<std::string,sf::Font*> font;
+	std::map<std::string,sf::Texture*> tex;
 	float dt;
 	sf::Clock sat,time;
 
@@ -24,7 +24,6 @@ class Game
 	int visina,sirina;
 	sf::RenderWindow *prozor;
 	
-	sf::CircleShape krug;
 	sf::RectangleShape health,healthblank,stomp,stompblank;
 	sf::Text healthtext,stomptext,fps,score;
 
@@ -44,8 +43,7 @@ class Game
 	void initent();
 	void updatewin();
     public:
-	Game() {}
-	Game(sf::RenderWindow *glprozor,sf::Font font,sf::Texture *neprijateljtex,sf::Texture *healthtex);
+	Game(sf::RenderWindow *glprozor,std::map<std::string,sf::Font*> mainfont,std::map<std::string,sf::Texture*> maintex);
 	void loop(bool ischanged,bool pause);
 	void draw();
 	bool gameover();
