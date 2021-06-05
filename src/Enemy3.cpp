@@ -1,5 +1,6 @@
 #include"includes/Global.hpp"
 #include"includes/Enemy3.hpp"
+
 float Enemy3::time=10;
 Enemy3::Enemy3(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja)
 {

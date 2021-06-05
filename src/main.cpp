@@ -1,5 +1,6 @@
 #include"includes/Global.hpp"
 #include"includes/State.hpp"
+
 int main()
 {
     State program;

@@ -1,7 +1,7 @@
 #include"includes/Global.hpp"
 #include"includes/State.hpp"
-
 #include"includes/Game.hpp"
+
 #include<iostream>
 State::State()
 {
@@ -21,18 +21,15 @@ void State::initassets()
     font["default"] = new sf::Font;
     tex["neprijatelj"] = new sf::Texture;
     tex["health"] = new sf::Texture;
-    if(!font["default"]->loadFromFile("assets/fonts/LiberationMono-Regular.ttf"))
-    {
-	std::cerr<<"Font not found\n";
-    }
-    if(!tex["health"]->loadFromFile("assets/images/healing.png"))
-    {
-	std::cerr<<"Texture not found\n";
-    }
-    if(!tex["neprijatelj"]->loadFromFile("assets/images/nep.png"))
-    {
-	std::cerr<<"Texture not found\n";
-    }
+    tex["clear"] = new sf::Texture;
+    tex["vampiric"] = new sf::Texture;
+    //tex["djule"] = new sf::Texture;
+    font["default"]->loadFromFile("assets/fonts/LiberationMono-Regular.ttf");
+    tex["health"]->loadFromFile("assets/images/healing.png");
+    tex["neprijatelj"]->loadFromFile("assets/images/nep.png");
+    tex["clear"]->loadFromFile("assets/images/clear.png");
+    tex["vampiric"]->loadFromFile("assets/images/vampiric.png");
+    //tex["djule"]->loadFromFile("assets/images/djule.png");
 }
 void State::events() {
     sf::Event evnt;

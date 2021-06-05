@@ -40,6 +40,7 @@ class Game
 	void initshapes();
 	void initui();
 	void inittex();
+	void pwptex();
 	void initent();
 	void updatewin();
     public:

@@ -5,7 +5,7 @@
 class Enemy1:public Entity
 {
     private:
-	float vx,vy;
+	float vx=0,vy=0;
     public:
 	static float time;
 	Enemy1():Entity() {}

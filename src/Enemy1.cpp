@@ -1,5 +1,6 @@
 #include"includes/Global.hpp"
 #include"includes/Enemy1.hpp"
+
 float Enemy1::time=8;
 Enemy1::Enemy1(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja):Entity(pozicija,velicina,boja) {}
 void Enemy1::izracunajbrzinu(float igracx,float igracy)

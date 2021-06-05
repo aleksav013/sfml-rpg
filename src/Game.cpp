@@ -36,12 +36,29 @@ void Game::initui()
     score.setFillColor(sf::Color::White);
     score.setPosition(sirina*5.0/6,50);
 }
+void Game::pwptex()
+{
+    for(size_t i=0;i<pow.size();i++) switch(pow.at(i).type)
+    {
+	case 1:
+	    pow.at(i).telo.setTexture(tex["health"]);
+	    break;
+	case 2:
+	    pow.at(i).telo.setTexture(tex["clear"]);
+	    break;
+	case 3:
+	    pow.at(i).telo.setTexture(tex["vampiric"]);
+	    break;
+	default:
+	    break;
+    }
+}
 void Game::inittex()
 {
-    for(size_t i=0;i<pow.size();i++) pow.at(i).telo.setTexture(tex["health"]);
     for(size_t i=0;i<nep1.size();i++) nep1.at(i).telo.setTexture(tex["neprijatelj"]);
     for(size_t i=0;i<nep2.size();i++) nep2.at(i).telo.setTexture(tex["neprijatelj"]);
     for(size_t i=0;i<nep3.size();i++) nep3.at(i).telo.setTexture(tex["neprijatelj"]);
+    pwptex();
 }
 void Game::initent()
 {
@@ -49,7 +66,7 @@ void Game::initent()
     for(size_t i=0;i<20;i++) nep1.push_back(Enemy1(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Red));
     for(size_t i=0;i<7;i++) nep2.push_back(Enemy2(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Cyan));//(253,106,2)));
     for(size_t i=0;i<4;i++) nep3.push_back(Enemy3(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Yellow));
-    pow.push_back(Powerup(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::White));
+    pow.push_back(Powerup(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::White,Global::rng()%3+1));
 }
 void Game::updatewin()
 {
@@ -85,6 +102,7 @@ bool Game::gameover()
 void Game::updatedt()
 {
     dt=sat.restart().asMicroseconds()/1000000.0;
+    if(dt>1) dt=0;
 }
 void Game::updateui()
 {
@@ -103,6 +121,7 @@ void Game::stompmain()
 	{
 	    igrac.xp+=5;
 	    nep1.at(i).ziv=0;
+	    if(igrac.vampirictime>0) igrac.health+=5;
 	}
     }
     for(size_t i=0;i<nep2.size();i++) if(nep2.at(i).ziv)
@@ -111,6 +130,7 @@ void Game::stompmain()
 	{
 	    igrac.xp+=10;
 	    nep2.at(i).ziv=0;
+	    if(igrac.vampirictime>0) igrac.health+=10;
 	}
     }
     for(size_t i=0;i<nep3.size();i++) if(nep3.at(i).ziv)
@@ -119,6 +139,7 @@ void Game::stompmain()
 	{
 	    igrac.xp+=20;
 	    nep3.at(i).ziv=0;
+	    if(igrac.vampirictime>0) igrac.health+=20;
 	}
     }
 }
@@ -133,7 +154,12 @@ void Game::keyboard()
 }
 void Game::draw()
 {
-    if(igrac.stomptime>4.6) prozor->draw(igrac.krug);
+    if(igrac.stomptime>4.6)
+    {
+	if(igrac.vampirictime>0) igrac.krug.setOutlineColor(sf::Color::Red);
+	else igrac.krug.setOutlineColor(sf::Color::White);
+	prozor->draw(igrac.krug);
+    }
     prozor->draw(igrac.telo);
     for(size_t i=0;i<nep1.size();i++) if(nep1.at(i).ziv) prozor->draw(nep1.at(i).telo);
     for(size_t i=0;i<nep2.size();i++) if(nep2.at(i).ziv) prozor->draw(nep2.at(i).telo);
@@ -182,7 +208,7 @@ void Game::checkcollision()
 	if(seseku(nep1.at(i).telo,igrac.telo))
 	{
 	    nep1.at(i).ziv=0;
-	    igrac.health-=Global::rng()%4+1; // 1-4 dmg
+	    igrac.health-=Global::rng()%4+1;
 	}
     }
     for(size_t i=0;i<nep2.size();i++) if(nep2.at(i).ziv)
@@ -190,7 +216,7 @@ void Game::checkcollision()
 	if(seseku(nep2.at(i).telo,igrac.telo))
 	{
 	    nep2.at(i).ziv=0;
-	    igrac.health-=Global::rng()%8+1; // 1-8 dmg
+	    igrac.health-=Global::rng()%8+1;
 	}
     }
     for(size_t i=0;i<nep3.size();i++) if(nep3.at(i).ziv)
@@ -198,7 +224,7 @@ void Game::checkcollision()
 	if(seseku(nep3.at(i).telo,igrac.telo))
 	{
 	    nep3.at(i).ziv=0;
-	    igrac.health-=Global::rng()%12+1; // 1-12 dmg
+	    igrac.health-=Global::rng()%12+1;
 	}
     }
     for(size_t i=0;i<pow.size();i++) if(pow.at(i).ziv)
@@ -206,7 +232,37 @@ void Game::checkcollision()
 	if(seseku(pow.at(i).telo,igrac.telo))
 	{
 	    pow.at(i).ziv=0;
-	    igrac.health+=Global::rng()%20+21; // 20-40 heal
+	    switch(pow.at(i).type)
+	    {
+		case 1:
+		    //health
+		    igrac.health+=Global::rng()%20+21;
+		    break;
+		case 2:
+		    //clear
+		    for(size_t i=0;i<nep1.size();i++) if(nep1.at(i).ziv)
+		    {
+			nep1.at(i).ziv=0;
+			igrac.xp+=5;
+		    }
+		    for(size_t i=0;i<nep2.size();i++) if(nep2.at(i).ziv)
+		    {
+			nep2.at(i).ziv=0;
+			igrac.xp+=10;
+		    }
+		    for(size_t i=0;i<nep3.size();i++) if(nep3.at(i).ziv)
+		    {
+			nep3.at(i).ziv=0;
+			igrac.xp+=20;
+		    }
+		    break;
+		case 3:
+		    //vampiric
+		    igrac.vampirictime=12;
+		    break;
+		default:
+		    break;
+	    }
 	}
     }
 }
@@ -235,18 +291,21 @@ void Game::respawn()
     if(Powerup::time<0)
     {
 	Powerup::time=20;
-	for(size_t i=0;i<pow.size();i++) pow.at(i).respawn(sirina,visina);
+	for(size_t i=0;i<pow.size();i++) pow.at(i).respawn(sirina,visina,Global::rng()%3+1);
+	pwptex();
     }
 }
 void Game::run()
 {
     igrac.updatest(dt);
+    igrac.updatevt(dt);
     respawn();
     position();
     checkcollision();
 }
 void Game::loop(bool ischanged,bool pause)
 {
+    updatedt();
     if(ischanged) updatewin();
     if(!pause)
     {
@@ -254,5 +313,4 @@ void Game::loop(bool ischanged,bool pause)
 	run();
     }
     updateui();
-    updatedt();
 }

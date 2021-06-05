@@ -1,5 +1,6 @@
 #include"includes/Global.hpp"
 #include"includes/Entity.hpp"
+
 Entity::Entity(sf::Vector2f pozicija, sf::Vector2f velicina,sf::Color boja)
 {
     telo.setSize(velicina);
