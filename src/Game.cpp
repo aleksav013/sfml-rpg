@@ -61,6 +61,10 @@ void Game::updatewin()
     score.setPosition(sirina*5.0/6,50);
     updateui();
 }
+Game::Game()
+{
+
+}
 Game::Game(sf::RenderWindow *glprozor,std::map<std::string,sf::Font*> mainfont,std::map<std::string,sf::Texture*> maintex)
 {
     prozor=glprozor;

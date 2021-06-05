@@ -43,6 +43,7 @@ class Game
 	void initent();
 	void updatewin();
     public:
+	Game();
 	Game(sf::RenderWindow *glprozor,std::map<std::string,sf::Font*> mainfont,std::map<std::string,sf::Texture*> maintex);
 	void loop(bool ischanged,bool pause);
 	void draw();
