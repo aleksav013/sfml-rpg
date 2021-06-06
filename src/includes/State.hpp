@@ -5,7 +5,7 @@
 class State
 {
     private:
-	sf::RenderWindow prozor;
+	sf::RenderWindow *prozor;
 	int visina,sirina;
 	bool ischanged=0,newgame=0,pause=0,kraj=0;
 

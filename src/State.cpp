@@ -11,10 +11,10 @@ State::State()
 }
 void State::initwin()
 {
-    prozor.create(sf::VideoMode::getFullscreenModes()[0],"RPG igra");
-    prozor.setFramerateLimit(60);
-    visina=prozor.getSize().y;
-    sirina=prozor.getSize().x;
+    prozor=new sf::RenderWindow(sf::VideoMode::getFullscreenModes()[0],"RPG igra");
+    prozor->setFramerateLimit(60);
+    visina=prozor->getSize().y;
+    sirina=prozor->getSize().x;
 }
 void State::initassets()
 {
@@ -33,19 +33,19 @@ void State::initassets()
 }
 void State::events() {
     sf::Event evnt;
-    while(prozor.pollEvent(evnt))
+    while(prozor->pollEvent(evnt))
     {
 	switch(evnt.type)
 	{
 	    case sf::Event::EventType::Closed:
-		prozor.close();
+		prozor->close();
 		break;
 	    case sf::Event::EventType::Resized:
-		std::cout<<"Nova velicina prozora je:"<<prozor.getSize().x<<'x'<<prozor.getSize().y<<std::endl;
 		ischanged=1;
-		visina=prozor.getSize().y;
-		sirina=prozor.getSize().x;
-		prozor.setView(sf::View(sf::FloatRect(0,0,sirina,visina)));
+		visina=prozor->getSize().y;
+		sirina=prozor->getSize().x;
+		prozor->setView(sf::View(sf::FloatRect(0,0,sirina,visina)));
+		std::cout<<"Nova velicina prozora je:"<<sirina<<'x'<<visina<<std::endl;
 		break;
 	    case sf::Event::EventType::KeyPressed:
 		keyboard();
@@ -72,7 +72,7 @@ void State::keyboard()
     }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::N))
     {
-	prozor.close();
+	prozor->close();
     }
 }
 void State::initui()
@@ -108,8 +108,8 @@ void State::updateui()
 }
 void State::loop()
 {
-    Game *igra=new Game(&prozor,font,tex);
-    while(prozor.isOpen())
+    Game *igra=new Game(prozor,font,tex);
+    while(prozor->isOpen())
     {
 	events();
 	kraj=igra->gameover();
@@ -119,21 +119,21 @@ void State::loop()
 	igra->draw();
 	if(kraj)
 	{
-	    prozor.draw(podloga);
-	    prozor.draw(krajtext);
+	    prozor->draw(podloga);
+	    prozor->draw(krajtext);
 	    if(newgame)
 	    {
 		delete igra;
-		igra=new Game(&prozor,font,tex);
+		igra=new Game(prozor,font,tex);
 	    }
 	}
 	if(pause)
 	{
-	    prozor.draw(podloga);
-	    prozor.draw(pausetext);
+	    prozor->draw(podloga);
+	    prozor->draw(pausetext);
 	}
-	prozor.display();
-	prozor.clear();
+	prozor->display();
+	prozor->clear();
 
 	ischanged=0;
 	newgame=0;
@@ -142,6 +142,7 @@ void State::loop()
 }
 State::~State()
 {
+    delete prozor;
     delete font["default"];
     delete tex["neprijatelj"];
     delete tex["health"];
