@@ -23,6 +23,7 @@ class State
 	void keyboard();
     public:
 	State();
+	~State();
 	void loop();
 };
 

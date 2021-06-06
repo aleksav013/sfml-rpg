@@ -75,10 +75,10 @@ void Game::inittex()
 void Game::initent()
 {
     igrac = Player(sf::Vector2f(sirina/2.0,visina/2.0),sf::Vector2f(100.0f,100.0f),sf::Color::White);
-    for(size_t i=0;i<20;i++) nep1.push_back(Enemy1(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Red));
-    for(size_t i=0;i<7;i++) nep2.push_back(Enemy2(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Cyan));//(253,106,2)));
-    for(size_t i=0;i<4;i++) nep3.push_back(Enemy3(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Yellow));
-    pow.push_back(Powerup(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::White,Global::rng()%3+1));
+    for(size_t i=0;i<20;i++) nep1.emplace_back(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Red);
+    for(size_t i=0;i<7;i++) nep2.emplace_back(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Cyan);
+    for(size_t i=0;i<4;i++) nep3.emplace_back(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::Yellow);
+    pow.emplace_back(sf::Vector2f(Global::rng()%sirina,Global::rng()%visina),sf::Vector2f(50.0f,50.0f),sf::Color::White,Global::rng()%3+1);
 }
 void Game::updatewin()
 {

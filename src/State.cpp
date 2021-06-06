@@ -121,7 +121,11 @@ void State::loop()
 	{
 	    prozor.draw(podloga);
 	    prozor.draw(krajtext);
-	    if(newgame) igra=new Game(&prozor,font,tex);
+	    if(newgame)
+	    {
+		delete igra;
+		igra=new Game(&prozor,font,tex);
+	    }
 	}
 	if(pause)
 	{
@@ -134,4 +138,14 @@ void State::loop()
 	ischanged=0;
 	newgame=0;
     }
+    delete igra;
+}
+State::~State()
+{
+    delete font["default"];
+    delete tex["neprijatelj"];
+    delete tex["health"];
+    delete tex["clear"];
+    delete tex["vampiric"];
+    //delete tex["djule"];
 }

@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = --std=c++14 -g -O2 -Wall
+CXXFLAGS = --std=c++14 -g -O0 -Wall
 LDLIBS = -lsfml-graphics -lsfml-window -lsfml-system
 
 SOURCE_DIR = src/
