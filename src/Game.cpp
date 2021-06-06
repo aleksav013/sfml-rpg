@@ -4,16 +4,23 @@
 void Game::initshapes()
 {
     health.setSize(sf::Vector2f(sirina/3.0,50.0));
-    health.setFillColor(sf::Color::Red);
+    health.setFillColor(sf::Color(255,0,0,200));
     healthblank.setSize(sf::Vector2f(sirina/3.0,50.0));
-    healthblank.setFillColor(sf::Color::White);
+    healthblank.setFillColor(sf::Color(255,255,255,200));
 
     stomp.setSize(sf::Vector2f(sirina/3.0,50.0));
-    stomp.setFillColor(sf::Color::Blue);
+    stomp.setFillColor(sf::Color(0,0,255,200));
     stomp.setPosition(0,50);
     stompblank.setSize(sf::Vector2f(sirina/3.0,50.0));
-    stompblank.setFillColor(sf::Color::White);
+    stompblank.setFillColor(sf::Color(255,255,255,200));
     stompblank.setPosition(0,50);
+
+    vampiric.setSize(sf::Vector2f(sirina/3.0,50.0));
+    vampiric.setFillColor(sf::Color(170,10,10,200));
+    vampiric.setPosition(0,100);
+    vampiricblank.setSize(sf::Vector2f(sirina/3.0,50.0));
+    vampiricblank.setFillColor(sf::Color(255,255,255,200));
+    vampiricblank.setPosition(0,100);
 }
 void Game::initui()
 {
@@ -26,6 +33,11 @@ void Game::initui()
     stomptext.setCharacterSize(24);
     stomptext.setPosition(0,50);
     stomptext.setFillColor(sf::Color::Black);
+    vampirictext.setFont(*font["default"]);
+    vampirictext.setString("Vampiric");
+    vampirictext.setCharacterSize(24);
+    vampirictext.setPosition(0,100);
+    vampirictext.setFillColor(sf::Color::Black);
 
     fps.setFont(*font["default"]);
     fps.setCharacterSize(24);
@@ -76,11 +88,6 @@ void Game::updatewin()
     stompblank.setSize(sf::Vector2f(sirina/3.0,50.0));
     fps.setPosition(sirina*5.0/6,0);
     score.setPosition(sirina*5.0/6,50);
-    updateui();
-}
-Game::Game()
-{
-
 }
 Game::Game(sf::RenderWindow *glprozor,std::map<std::string,sf::Font*> mainfont,std::map<std::string,sf::Texture*> maintex)
 {
@@ -89,10 +96,12 @@ Game::Game(sf::RenderWindow *glprozor,std::map<std::string,sf::Font*> mainfont,s
     tex=maintex;
 
     updatewin();
-    initui();
     initshapes();
     initent();
     inittex();
+    updatedt();
+    initui();
+    updateui();
 }
 bool Game::gameover()
 {
@@ -107,7 +116,10 @@ void Game::updatedt()
 void Game::updateui()
 {
     health.setSize(sf::Vector2f(sirina*igrac.health/300.0,50.0));
+    if(igrac.health>=100) healthblank.setSize(health.getSize());
+    else healthblank.setSize(sf::Vector2f(sirina/3.0,50.0));
     stomp.setSize(sf::Vector2f(sirina*(5-igrac.stomptime)/15.0,50.0));
+    vampiric.setSize(sf::Vector2f(sirina*(igrac.vampirictime)/36.0,50.0));
     fps.setString("fps: "+std::to_string((int)(1/dt)));
     score.setString("xp: "+std::to_string(igrac.xp));
 }
@@ -172,6 +184,12 @@ void Game::draw()
     prozor->draw(stompblank);
     prozor->draw(stomp);
     prozor->draw(stomptext);
+    if(igrac.vampirictime>0)
+    {
+	prozor->draw(vampiricblank);
+	prozor->draw(vampiric);
+	prozor->draw(vampirictext);
+    }
     prozor->draw(fps);
     prozor->draw(score);
 }
@@ -306,7 +324,11 @@ void Game::run()
 void Game::loop(bool ischanged,bool pause)
 {
     updatedt();
-    if(ischanged) updatewin();
+    if(ischanged)
+    {
+	updatewin();
+	updateui();
+    }
     if(!pause)
     {
 	keyboard();

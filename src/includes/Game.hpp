@@ -24,8 +24,8 @@ class Game
 	int visina,sirina;
 	sf::RenderWindow *prozor;
 	
-	sf::RectangleShape health,healthblank,stomp,stompblank;
-	sf::Text healthtext,stomptext,fps,score;
+	sf::RectangleShape health,healthblank,stomp,stompblank,vampiric,vampiricblank;
+	sf::Text healthtext,stomptext,fps,score,vampirictext;
 
 	void keyboard();
 	void run();
@@ -44,7 +44,6 @@ class Game
 	void initent();
 	void updatewin();
     public:
-	Game();
 	Game(sf::RenderWindow *glprozor,std::map<std::string,sf::Font*> mainfont,std::map<std::string,sf::Texture*> maintex);
 	void loop(bool ischanged,bool pause);
 	void draw();

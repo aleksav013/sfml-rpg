@@ -12,6 +12,7 @@ class Enemy2:public Entity
 	Enemy2(sf::Vector2f pozicija,sf::Vector2f velicina,sf::Color boja);
 	void izracunajbrzinu(float igracx,float igracy,float dt);
 	void izracunajpoz(float igracx,float igracy,float dt);
+	void respawn(int sirina,int visina);
 };
 
 #endif

@@ -21,3 +21,8 @@ void Enemy2::izracunajpoz(float igracx,float igracy,float dt)
     x+=vx*dt;
     y+=vy*dt;
 }
+void Enemy2::respawn(int sirina,int visina)
+{
+    Entity::respawn(sirina,visina);
+    vx=vy=0;
+}
