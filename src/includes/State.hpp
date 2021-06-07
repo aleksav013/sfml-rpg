@@ -2,15 +2,16 @@
 #define STATE_H
 
 #include<SFML/Graphics.hpp>
+#include<memory>
 class State
 {
     private:
-	sf::RenderWindow *prozor;
+	std::shared_ptr<sf::RenderWindow> prozor;
 	int visina,sirina;
 	bool ischanged=0,newgame=0,pause=0,kraj=0;
 
-	std::map<std::string,sf::Font*> font;
-	std::map<std::string,sf::Texture*> tex;
+	std::map<std::string,std::shared_ptr<sf::Font>> font;
+	std::map<std::string,std::shared_ptr<sf::Texture>> tex;
 
 	sf::RectangleShape podloga;
 	sf::Text pausetext,krajtext;
@@ -23,7 +24,6 @@ class State
 	void keyboard();
     public:
 	State();
-	~State();
 	void loop();
 };
 

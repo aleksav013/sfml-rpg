@@ -53,13 +53,13 @@ void Game::pwptex()
     for(size_t i=0;i<pow.size();i++) switch(pow.at(i).type)
     {
 	case 1:
-	    pow.at(i).telo.setTexture(tex["health"]);
+	    pow.at(i).telo.setTexture(tex["health"].get());
 	    break;
 	case 2:
-	    pow.at(i).telo.setTexture(tex["clear"]);
+	    pow.at(i).telo.setTexture(tex["clear"].get());
 	    break;
 	case 3:
-	    pow.at(i).telo.setTexture(tex["vampiric"]);
+	    pow.at(i).telo.setTexture(tex["vampiric"].get());
 	    break;
 	default:
 	    break;
@@ -67,9 +67,9 @@ void Game::pwptex()
 }
 void Game::inittex()
 {
-    for(size_t i=0;i<nep1.size();i++) nep1.at(i).telo.setTexture(tex["neprijatelj"]);
-    for(size_t i=0;i<nep2.size();i++) nep2.at(i).telo.setTexture(tex["neprijatelj"]);
-    for(size_t i=0;i<nep3.size();i++) nep3.at(i).telo.setTexture(tex["neprijatelj"]);
+    for(size_t i=0;i<nep1.size();i++) nep1.at(i).telo.setTexture(tex["neprijatelj"].get());
+    for(size_t i=0;i<nep2.size();i++) nep2.at(i).telo.setTexture(tex["neprijatelj"].get());
+    for(size_t i=0;i<nep3.size();i++) nep3.at(i).telo.setTexture(tex["neprijatelj"].get());
     pwptex();
 }
 void Game::initent()
@@ -89,9 +89,9 @@ void Game::updatewin()
     fps.setPosition(sirina*5.0/6,0);
     score.setPosition(sirina*5.0/6,50);
 }
-Game::Game(sf::RenderWindow *glprozor,std::map<std::string,sf::Font*> mainfont,std::map<std::string,sf::Texture*> maintex)
+Game::Game(std::shared_ptr<sf::RenderWindow> mainprozor,std::map<std::string,std::shared_ptr<sf::Font>> mainfont,std::map<std::string,std::shared_ptr<sf::Texture>> maintex)
 {
-    prozor=glprozor;
+    prozor=mainprozor;
     font=mainfont;
     tex=maintex;
 
@@ -111,7 +111,7 @@ bool Game::gameover()
 void Game::updatedt()
 {
     dt=sat.restart().asMicroseconds()/1000000.0;
-    if(dt>1) dt=0;
+    if(dt>0.5) dt=0;
 }
 void Game::updateui()
 {

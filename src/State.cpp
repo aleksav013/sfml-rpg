@@ -11,19 +11,19 @@ State::State()
 }
 void State::initwin()
 {
-    prozor=new sf::RenderWindow(sf::VideoMode::getFullscreenModes()[0],"RPG igra");
-    prozor->setFramerateLimit(60);
+    prozor=std::make_shared<sf::RenderWindow>(sf::VideoMode::getFullscreenModes()[0],"RPG igra",sf::Style::Fullscreen);
+    prozor->setVerticalSyncEnabled(true);
     visina=prozor->getSize().y;
     sirina=prozor->getSize().x;
 }
 void State::initassets()
 {
-    font["default"] = new sf::Font;
-    tex["neprijatelj"] = new sf::Texture;
-    tex["health"] = new sf::Texture;
-    tex["clear"] = new sf::Texture;
-    tex["vampiric"] = new sf::Texture;
-    //tex["djule"] = new sf::Texture;
+    font["default"]=std::make_shared<sf::Font>();
+    tex["neprijatelj"]=std::make_shared<sf::Texture>();
+    tex["health"]=std::make_shared<sf::Texture>();
+    tex["clear"]=std::make_shared<sf::Texture>();
+    tex["vampiric"]=std::make_shared<sf::Texture>();
+    //tex["djule"]=std::make_shared<sf::Texture>();
     font["default"]->loadFromFile("assets/fonts/LiberationMono-Regular.ttf");
     tex["health"]->loadFromFile("assets/images/healing.png");
     tex["neprijatelj"]->loadFromFile("assets/images/nep.png");
@@ -108,7 +108,7 @@ void State::updateui()
 }
 void State::loop()
 {
-    Game *igra=new Game(prozor,font,tex);
+    std::unique_ptr<Game> igra=std::make_unique<Game>(prozor,font,tex);
     while(prozor->isOpen())
     {
 	events();
@@ -123,8 +123,7 @@ void State::loop()
 	    prozor->draw(krajtext);
 	    if(newgame)
 	    {
-		delete igra;
-		igra=new Game(prozor,font,tex);
+		igra=std::make_unique<Game>(prozor,font,tex);
 	    }
 	}
 	if(pause)
@@ -138,15 +137,4 @@ void State::loop()
 	ischanged=0;
 	newgame=0;
     }
-    delete igra;
-}
-State::~State()
-{
-    delete prozor;
-    delete font["default"];
-    delete tex["neprijatelj"];
-    delete tex["health"];
-    delete tex["clear"];
-    delete tex["vampiric"];
-    //delete tex["djule"];
 }

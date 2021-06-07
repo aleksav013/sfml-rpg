@@ -7,11 +7,12 @@
 #include"Enemy3.hpp"
 #include"Powerup.hpp"
 
+#include<memory>
 class Game
 {
     private:
-	std::map<std::string,sf::Font*> font;
-	std::map<std::string,sf::Texture*> tex;
+	std::map<std::string,std::shared_ptr<sf::Font>> font;
+	std::map<std::string,std::shared_ptr<sf::Texture>> tex;
 	float dt;
 	sf::Clock sat,time;
 
@@ -22,7 +23,7 @@ class Game
 	std::vector<Powerup> pow;
 
 	int visina,sirina;
-	sf::RenderWindow *prozor;
+	std::shared_ptr<sf::RenderWindow> prozor;
 	
 	sf::RectangleShape health,healthblank,stomp,stompblank,vampiric,vampiricblank;
 	sf::Text healthtext,stomptext,fps,score,vampirictext;
@@ -44,7 +45,7 @@ class Game
 	void initent();
 	void updatewin();
     public:
-	Game(sf::RenderWindow *glprozor,std::map<std::string,sf::Font*> mainfont,std::map<std::string,sf::Texture*> maintex);
+	Game(std::shared_ptr<sf::RenderWindow> mainprozor,std::map<std::string,std::shared_ptr<sf::Font>> mainfont,std::map<std::string,std::shared_ptr<sf::Texture>> maintex);
 	void loop(bool ischanged,bool pause);
 	void draw();
 	bool gameover();
