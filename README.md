@@ -14,7 +14,7 @@ make
 - Install [mingw-w64](http://mingw-w64.org/doku.php/download/mingw-builds)
 - Add mingw64\bin to $PATH
 ```
-g++ -std=c++14 -g -O2 -Wall -o sfml-rpg *.cpp -I SFML-2.5.1\include -L SFML-2.5.1\lib -lsfml-graphics -lsfml-window -lsfml-system
+g++ -std=c++14 -g -O2 -Wall -o sfml-rpg src\*.cpp -I SFML-2.5.1\include -L SFML-2.5.1\lib -lsfml-graphics -lsfml-window -lsfml-system
 ```
 Or just use Linux
 > If you use Visual Studio or Code::Blocks you can follow [official tutorial](https://www.sfml-dev.org/tutorials) for setting up SFML.

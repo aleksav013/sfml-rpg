@@ -11,7 +11,7 @@ State::State()
 }
 void State::initwin()
 {
-    prozor=std::make_shared<sf::RenderWindow>(sf::VideoMode::getFullscreenModes()[0],"RPG igra",sf::Style::Fullscreen);
+    prozor=std::make_shared<sf::RenderWindow>(sf::VideoMode::getFullscreenModes()[0],"RPG igra",sf::Style::Default);
     prozor->setVerticalSyncEnabled(true);
     visina=prozor->getSize().y;
     sirina=prozor->getSize().x;

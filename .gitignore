@@ -1,4 +1,4 @@
 sfml-rpg
-*.o
+build
 *.out
 *.exe
